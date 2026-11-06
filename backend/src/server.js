@@ -34,8 +34,8 @@ const frontendOrigin = process.env.CORS_ORIGIN;
 const corsOptions = {
     origin: (origin, callback) => {
 
-        // Allow requests without an Origin header,
-        // such as Postman and server-to-server requests.
+        // Allow requests without an Origin header
+        // such as Postman and server-to-server requests
         if (!origin) {
             return callback(null, true);
         }
@@ -69,7 +69,12 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 // Helmet security configuration
-app.use(helmet());
+// Allow the frontend to display uploaded profile pictures
+app.use(helmet({
+    crossOriginResourcePolicy: {
+        policy: "cross-origin"
+    }
+}));
 
 // Parse JSON requests
 app.use(express.json());
@@ -81,15 +86,7 @@ app.use(
     "/uploads",
     express.static(uploadDirectory, {
         dotfiles: "deny",
-        index: false,
-
-        // Allow the configured frontend to display images
-        setHeaders: (response) => {
-            response.setHeader(
-                "Cross-Origin-Resource-Policy",
-                "cross-origin"
-            );
-        }
+        index: false
     })
 );
 
@@ -98,7 +95,7 @@ app.use(morgan("dev"));
 app.use(fileLogger);
 
 // Rate limiting
-// Protects Signup and Login, as well as other API routes.
+// Protects Signup, Login and other API routes
 app.use("/api/v1", apiLimiter);
 
 // Health check endpoint

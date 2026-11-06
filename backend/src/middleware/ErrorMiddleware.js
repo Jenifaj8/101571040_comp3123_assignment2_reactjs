@@ -1,3 +1,4 @@
+
 /*
 Purpose:
 Handle API errors in one place.
@@ -10,7 +11,16 @@ const errorHandler = (error, request, response, next) => {
         return next(error);
     }
 
-    const statusCode = error.status || error.statusCode || 500;
+    let statusCode = error.status || error.statusCode || 500;
+
+    // Validate HTTP status code
+    if (
+        !Number.isInteger(statusCode) ||
+        statusCode < 400 ||
+        statusCode > 599
+    ) {
+        statusCode = 500;
+    }
 
     return response.status(statusCode).json({
         message: statusCode === 500
