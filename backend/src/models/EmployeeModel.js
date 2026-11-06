@@ -42,6 +42,10 @@ const EmployeeSchema = mongoose.Schema({
         required: true,
         trim: true
     },
+    profile_picture: {
+    type: String,
+    default: null
+    },
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",

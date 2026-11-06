@@ -1,3 +1,4 @@
+
 /*
 Purpose:
 Handle employee management operations.
@@ -5,6 +6,63 @@ Handle employee management operations.
 
 const mongoose = require("mongoose");
 const EmployeeModel = require("../models/EmployeeModel");
+const fs = require("fs");
+const path = require("path");
+
+// Upload directory
+const uploadDirectory = path.resolve(__dirname, "../../uploads");
+
+// Remove a file safely from the uploads directory
+const removeFile = (filePath) => {
+    if (!filePath) {
+        return;
+    }
+
+    const resolvedPath = path.resolve(filePath);
+
+    // Only allow deleting files inside the uploads directory
+    if (path.dirname(resolvedPath) !== uploadDirectory) {
+        return;
+    }
+
+    try {
+        if (fs.existsSync(resolvedPath)) {
+            fs.unlinkSync(resolvedPath);
+        }
+    } catch (error) {
+        console.error("File removal error:", error.message);
+    }
+};
+
+// Remove newly uploaded file if an operation fails
+const removeUploadedFile = (request) => {
+    if (request.file) {
+        removeFile(request.file.path);
+    }
+};
+
+// Remove an employee's stored profile picture safely
+const removeStoredProfilePicture = (picturePath) => {
+    if (typeof picturePath !== "string") {
+        return;
+    }
+
+    const normalizedPath = picturePath.replace(/\\/g, "/");
+
+    if (!normalizedPath.startsWith("/uploads/")) {
+        return;
+    }
+
+    const filename = normalizedPath.slice("/uploads/".length);
+
+    // Prevent path traversal
+    if (!filename || filename !== path.basename(filename)) {
+        return;
+    }
+
+    removeFile(path.join(uploadDirectory, filename));
+};
+
 
 // CREATE EMPLOYEE
 const createEmployee = async (request, response) => {
@@ -33,26 +91,37 @@ const createEmployee = async (request, response) => {
             !field.trim() ||
             field.trim().length > 100
         )) {
+            removeUploadedFile(request);
+
             return response.status(400).json({
                 message: "Employee text fields are required and must be valid"
             });
         }
 
         // Validate email
+        const cleanEmail = email.trim().toLowerCase();
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-        if (!emailRegex.test(email.trim()) || email.length > 254) {
+        if (!emailRegex.test(cleanEmail) || cleanEmail.length > 254) {
+            removeUploadedFile(request);
+
             return response.status(400).json({
                 message: "Invalid employee email"
             });
         }
 
-        // Validate salary
+        // Convert salary from multipart/form-data
+        const parsedSalary = Number(salary);
+
         if (
-            typeof salary !== "number" ||
-            !Number.isFinite(salary) ||
-            salary < 0
+            salary === undefined ||
+            salary === null ||
+            String(salary).trim() === "" ||
+            !Number.isFinite(parsedSalary) ||
+            parsedSalary < 0
         ) {
+            removeUploadedFile(request);
+
             return response.status(400).json({
                 message: "Salary must be a valid non-negative number"
             });
@@ -65,6 +134,8 @@ const createEmployee = async (request, response) => {
             Number.isNaN(Date.parse(date_of_joining)) ||
             new Date(date_of_joining).toISOString().slice(0, 10) !== date_of_joining
         ) {
+            removeUploadedFile(request);
+
             return response.status(400).json({
                 message: "Date of joining must be a valid YYYY-MM-DD date"
             });
@@ -72,13 +143,20 @@ const createEmployee = async (request, response) => {
 
         // Create employee for authenticated user
         const employee = new EmployeeModel({
-            first_name,
-            last_name,
-            email,
-            position,
-            salary,
+            first_name: first_name.trim(),
+            last_name: last_name.trim(),
+            email: cleanEmail,
+            position: position.trim(),
+            salary: parsedSalary,
             date_of_joining,
-            department,
+            department: department.trim(),
+
+            // Save profile picture path
+            profile_picture: request.file
+                ? `/uploads/${request.file.filename}`
+                : null,
+
+            // Never accept user ID from the client
             user: request.user.id
         });
 
@@ -90,6 +168,17 @@ const createEmployee = async (request, response) => {
         });
 
     } catch (error) {
+        removeUploadedFile(request);
+
+        if (
+            error.name === "ValidationError" ||
+            error.name === "CastError"
+        ) {
+            return response.status(400).json({
+                message: "Invalid employee information"
+            });
+        }
+
         console.error("Create employee error:", error.message);
 
         return response.status(500).json({
@@ -121,7 +210,7 @@ const getAllEmployees = async (request, response) => {
 };
 
 
- // SEARCH EMPLOYEES BY DEPARTMENT OR POSITION
+// SEARCH EMPLOYEES BY DEPARTMENT OR POSITION
 const searchEmployees = async (request, response) => {
     try {
         const { department, position } = request.query;
@@ -141,7 +230,7 @@ const searchEmployees = async (request, response) => {
             });
         }
 
-        // Search only employees belonging to the logged-in user
+        // Search only employees belonging to logged-in user
         const filter = {
             user: request.user.id
         };
@@ -150,7 +239,7 @@ const searchEmployees = async (request, response) => {
         const escapeRegex = value =>
             value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-        // Case-insensitive department search
+        // Search by department
         if (department !== undefined) {
             filter.department = {
                 $regex: escapeRegex(department.trim()),
@@ -158,7 +247,7 @@ const searchEmployees = async (request, response) => {
             };
         }
 
-        // Case-insensitive position search
+        // Search by position
         if (position !== undefined) {
             filter.position = {
                 $regex: escapeRegex(position.trim()),
@@ -229,8 +318,24 @@ const updateEmployee = async (request, response) => {
 
         // Validate MongoDB ObjectId
         if (!mongoose.isValidObjectId(employeeId)) {
+            removeUploadedFile(request);
+
             return response.status(400).json({
                 message: "Invalid employee ID"
+            });
+        }
+
+        // Find employee belonging to authenticated user
+        const existingEmployee = await EmployeeModel.findOne({
+            _id: employeeId,
+            user: request.user.id
+        });
+
+        if (!existingEmployee) {
+            removeUploadedFile(request);
+
+            return response.status(404).json({
+                message: "Employee not found"
             });
         }
 
@@ -253,6 +358,101 @@ const updateEmployee = async (request, response) => {
             }
         }
 
+        // Validate updated text fields
+        const textFields = [
+            "first_name",
+            "last_name",
+            "position",
+            "department"
+        ];
+
+        for (const field of textFields) {
+            if (updates[field] !== undefined) {
+                if (
+                    typeof updates[field] !== "string" ||
+                    !updates[field].trim() ||
+                    updates[field].trim().length > 100
+                ) {
+                    removeUploadedFile(request);
+
+                    return response.status(400).json({
+                        message: `Invalid ${field}`
+                    });
+                }
+
+                updates[field] = updates[field].trim();
+            }
+        }
+
+        // Validate email if supplied
+        if (updates.email !== undefined) {
+            if (typeof updates.email !== "string") {
+                removeUploadedFile(request);
+
+                return response.status(400).json({
+                    message: "Invalid employee email"
+                });
+            }
+
+            updates.email = updates.email.trim().toLowerCase();
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            if (
+                updates.email.length > 254 ||
+                !emailRegex.test(updates.email)
+            ) {
+                removeUploadedFile(request);
+
+                return response.status(400).json({
+                    message: "Invalid employee email"
+                });
+            }
+        }
+
+        // Validate salary
+        if (updates.salary !== undefined) {
+            const parsedSalary = Number(updates.salary);
+
+            if (
+                String(updates.salary).trim() === "" ||
+                !Number.isFinite(parsedSalary) ||
+                parsedSalary < 0
+            ) {
+                removeUploadedFile(request);
+
+                return response.status(400).json({
+                    message: "Salary must be a valid non-negative number"
+                });
+            }
+
+            updates.salary = parsedSalary;
+        }
+
+        // Validate date
+        if (updates.date_of_joining !== undefined) {
+            const date = updates.date_of_joining;
+
+            if (
+                typeof date !== "string" ||
+                !/^\d{4}-\d{2}-\d{2}$/.test(date) ||
+                Number.isNaN(Date.parse(date)) ||
+                new Date(date).toISOString().slice(0, 10) !== date
+            ) {
+                removeUploadedFile(request);
+
+                return response.status(400).json({
+                    message: "Date of joining must be a valid YYYY-MM-DD date"
+                });
+            }
+        }
+
+        // Save new profile picture path if uploaded
+        if (request.file) {
+            updates.profile_picture =
+                `/uploads/${request.file.filename}`;
+        }
+
         if (Object.keys(updates).length === 0) {
             return response.status(400).json({
                 message: "No valid employee fields provided"
@@ -273,9 +473,18 @@ const updateEmployee = async (request, response) => {
         );
 
         if (!employee) {
+            removeUploadedFile(request);
+
             return response.status(404).json({
                 message: "Employee not found"
             });
+        }
+
+        // Remove previous picture after successful replacement
+        if (request.file && existingEmployee.profile_picture) {
+            removeStoredProfilePicture(
+                existingEmployee.profile_picture
+            );
         }
 
         return response.status(200).json({
@@ -284,6 +493,8 @@ const updateEmployee = async (request, response) => {
         });
 
     } catch (error) {
+        removeUploadedFile(request);
+
         if (
             error.name === "ValidationError" ||
             error.name === "CastError"
@@ -314,7 +525,7 @@ const deleteEmployee = async (request, response) => {
             });
         }
 
-        // Delete only an employee owned by the logged-in user
+        // Delete only an employee belonging to logged-in user
         const employee = await EmployeeModel.findOneAndDelete({
             _id: employeeId,
             user: request.user.id
@@ -324,6 +535,11 @@ const deleteEmployee = async (request, response) => {
             return response.status(404).json({
                 message: "Employee not found"
             });
+        }
+
+        // Remove employee's profile picture
+        if (employee.profile_picture) {
+            removeStoredProfilePicture(employee.profile_picture);
         }
 
         // Successful deletion - no response body

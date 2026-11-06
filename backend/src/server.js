@@ -9,6 +9,7 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
+const path = require("path");
 
 require("dotenv").config();
 
@@ -22,21 +23,82 @@ const errorHandler = require("./middleware/ErrorMiddleware");
 
 const app = express();
 
-// Trust Vercel's reverse proxy
+// Trust reverse proxy when deployed
 if (process.env.VERCEL) {
     app.set("trust proxy", 1);
 }
 
-// Middleware
-app.use(express.json());
-app.use(cors());
+// CORS configuration
+const frontendOrigin = process.env.CORS_ORIGIN;
+
+const corsOptions = {
+    origin: (origin, callback) => {
+
+        // Allow requests without an Origin header,
+        // such as Postman and server-to-server requests.
+        if (!origin) {
+            return callback(null, true);
+        }
+
+        // Allow only the configured frontend origin
+        if (frontendOrigin && origin === frontendOrigin) {
+            return callback(null, true);
+        }
+
+        // Reject other browser origins
+        return callback(null, false);
+    },
+
+    methods: [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE",
+        "OPTIONS"
+    ],
+
+    allowedHeaders: [
+        "Content-Type",
+        "Authorization"
+    ],
+
+    optionsSuccessStatus: 204
+};
+
+// Apply CORS
+app.use(cors(corsOptions));
+
+// Helmet security configuration
 app.use(helmet());
+
+// Parse JSON requests
+app.use(express.json());
+
+// Serve uploaded employee profile pictures
+const uploadDirectory = path.join(__dirname, "../uploads");
+
+app.use(
+    "/uploads",
+    express.static(uploadDirectory, {
+        dotfiles: "deny",
+        index: false,
+
+        // Allow the configured frontend to display images
+        setHeaders: (response) => {
+            response.setHeader(
+                "Cross-Origin-Resource-Policy",
+                "cross-origin"
+            );
+        }
+    })
+);
 
 // Console and file logging
 app.use(morgan("dev"));
 app.use(fileLogger);
 
 // Rate limiting
+// Protects Signup and Login, as well as other API routes.
 app.use("/api/v1", apiLimiter);
 
 // Health check endpoint
@@ -83,5 +145,5 @@ if (process.env.VERCEL) {
     connectDB();
 }
 
-// Export Express app for Vercel
+// Export Express app for deployment
 module.exports = app;
