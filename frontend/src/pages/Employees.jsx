@@ -3,6 +3,7 @@
 Purpose:
 Display employees belonging to the logged-in user.
 Allow users to search, view, edit and delete employees.
+Show a table on desktop and responsive cards on mobile.
 */
 
 import { useEffect, useState } from "react";
@@ -189,6 +190,76 @@ function Employees() {
         }
     };
 
+    // Display employee profile picture or placeholder
+    const renderEmployeePicture = (employee) => {
+        if (employee.profile_picture) {
+            return (
+                <img
+                    src={`${import.meta.env.VITE_API_URL}${employee.profile_picture}`}
+                    alt={`${employee.first_name} ${employee.last_name}`}
+                    width="55"
+                    height="55"
+                    style={{
+                        objectFit: "cover",
+                        borderRadius: "50%"
+                    }}
+                />
+            );
+        }
+
+        return (
+            <div
+                className="d-flex align-items-center justify-content-center bg-light border rounded-circle text-muted text-center"
+                style={{
+                    width: "55px",
+                    height: "55px",
+                    fontSize: "10px",
+                    flexShrink: 0
+                }}
+            >
+                No Picture
+            </div>
+        );
+    };
+
+    // Reuse the same buttons for desktop and mobile
+    const renderEmployeeActions = (employee, mobile = false) => {
+        return (
+            <div
+                className={
+                    mobile
+                        ? "d-flex flex-wrap gap-2"
+                        : "d-flex flex-wrap gap-2"
+                }
+            >
+                <Link
+                    to={`/employees/${employee._id}`}
+                    className={`btn btn-info btn-sm ${mobile ? "flex-fill" : ""}`}
+                >
+                    View
+                </Link>
+
+                <Link
+                    to={`/employees/${employee._id}/edit`}
+                    className={`btn btn-warning btn-sm ${mobile ? "flex-fill" : ""}`}
+                >
+                    Edit
+                </Link>
+
+                <button
+                    type="button"
+                    className={`btn btn-danger btn-sm ${mobile ? "flex-fill" : ""}`}
+                    onClick={() => handleDelete(employee)}
+                    disabled={deletingId !== null}
+                >
+                    {deletingId === employee._id
+                        ? "Deleting..."
+                        : "Delete"}
+                </button>
+            </div>
+        );
+    };
+
     return (
         <>
             <Navbar />
@@ -254,7 +325,7 @@ function Employees() {
                                     />
                                 </div>
 
-                                <div className="col-md-4 d-flex align-items-end gap-2">
+                                <div className="col-md-4 d-flex align-items-end gap-2 flex-wrap">
                                     <button
                                         type="submit"
                                         className="btn btn-primary"
@@ -303,86 +374,97 @@ function Employees() {
                     </div>
                 )}
 
-                {/* Employee table */}
+                {/* Employee list */}
                 {!loading && employees.length > 0 && (
-                    <div className="table-responsive">
-                        <table className="table table-striped table-bordered align-middle">
-                            <thead className="table-dark">
-                                <tr>
-                                    <th>Picture</th>
-                                    <th>Name</th>
-                                    <th>Position</th>
-                                    <th>Department</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                {employees.map((employee) => (
-                                    <tr key={employee._id}>
-                                        <td>
-                                            {employee.profile_picture ? (
-                                                <img
-                                                    src={`${import.meta.env.VITE_API_URL}${employee.profile_picture}`}
-                                                    alt={`${employee.first_name} ${employee.last_name}`}
-                                                    width="50"
-                                                    height="50"
-                                                    style={{
-                                                        objectFit: "cover",
-                                                        borderRadius: "50%"
-                                                    }}
-                                                />
-                                            ) : (
-                                                <span className="text-muted">
-                                                    No Picture
-                                                </span>
-                                            )}
-                                        </td>
-
-                                        <td>
-                                            {employee.first_name}{" "}
-                                            {employee.last_name}
-                                        </td>
-
-                                        <td>{employee.position}</td>
-
-                                        <td>{employee.department}</td>
-
-                                        <td>
-                                            <div className="d-flex flex-wrap gap-2">
-                                                <Link
-                                                    to={`/employees/${employee._id}`}
-                                                    className="btn btn-info btn-sm"
-                                                >
-                                                    View
-                                                </Link>
-
-                                                <Link
-                                                    to={`/employees/${employee._id}/edit`}
-                                                    className="btn btn-warning btn-sm"
-                                                >
-                                                    Edit
-                                                </Link>
-
-                                                <button
-                                                    type="button"
-                                                    className="btn btn-danger btn-sm"
-                                                    onClick={() =>
-                                                        handleDelete(employee)
-                                                    }
-                                                    disabled={deletingId !== null}
-                                                >
-                                                    {deletingId === employee._id
-                                                        ? "Deleting..."
-                                                        : "Delete"}
-                                                </button>
-                                            </div>
-                                        </td>
+                    <>
+                        {/* Desktop and tablet table */}
+                        <div className="d-none d-md-block table-responsive">
+                            <table className="table table-striped table-bordered align-middle">
+                                <thead className="table-dark">
+                                    <tr>
+                                        <th>Picture</th>
+                                        <th>Name</th>
+                                        <th>Position</th>
+                                        <th>Department</th>
+                                        <th>Actions</th>
                                     </tr>
+                                </thead>
+
+                                <tbody>
+                                    {employees.map((employee) => (
+                                        <tr key={employee._id}>
+                                            <td>
+                                                {renderEmployeePicture(employee)}
+                                            </td>
+
+                                            <td>
+                                                {employee.first_name}{" "}
+                                                {employee.last_name}
+                                            </td>
+
+                                            <td>{employee.position}</td>
+
+                                            <td>{employee.department}</td>
+
+                                            <td>
+                                                {renderEmployeeActions(employee)}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Mobile employee cards */}
+                        <div className="d-md-none">
+                            <div className="row g-3">
+                                {employees.map((employee) => (
+                                    <div
+                                        className="col-12"
+                                        key={employee._id}
+                                    >
+                                        <div className="card shadow-sm h-100">
+                                            <div className="card-body">
+                                                <div className="d-flex align-items-center gap-3 mb-3">
+                                                    {renderEmployeePicture(employee)}
+
+                                                    <div
+                                                        className="flex-grow-1"
+                                                        style={{ minWidth: 0 }}
+                                                    >
+                                                        <h5 className="card-title mb-1 text-break">
+                                                            {employee.first_name}{" "}
+                                                            {employee.last_name}
+                                                        </h5>
+
+                                                        <p className="text-muted small mb-0 text-break">
+                                                            {employee.position}
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                <div className="mb-3">
+                                                    <span className="fw-semibold">
+                                                        Department:
+                                                    </span>{" "}
+                                                    <span className="text-break">
+                                                        {employee.department}
+                                                    </span>
+                                                </div>
+
+                                                <hr />
+
+                                                {renderEmployeeActions(
+                                                    employee,
+                                                    true
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
                                 ))}
-                            </tbody>
-                        </table>
-                    </div>
+                            </div>
+                        </div>
+                    </>
                 )}
             </div>
         </>
