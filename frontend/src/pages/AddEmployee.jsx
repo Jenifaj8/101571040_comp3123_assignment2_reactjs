@@ -4,6 +4,7 @@ Purpose:
 Allow authenticated users to create employees
 with an optional profile picture.
 Validate picture type and size before uploading.
+Display a confirmation after successful creation.
 */
 
 import { useState } from "react";
@@ -105,7 +106,7 @@ function AddEmployee() {
         event.preventDefault();
         setError("");
 
-        // Prevent submission with an invalid picture
+        // Prevent submission with invalid picture
         if (pictureError) {
             return;
         }
@@ -153,8 +154,13 @@ function AddEmployee() {
                 data
             );
 
-            // Return to Employee List
-            navigate("/employees", { replace: true });
+            // Redirect with confirmation message
+            navigate("/employees", {
+                replace: true,
+                state: {
+                    successMessage: "Employee created successfully!"
+                }
+            });
 
         } catch (error) {
             const status = error.response?.status;
@@ -195,6 +201,7 @@ function AddEmployee() {
                     <div className="col-md-9 col-lg-7">
                         <div className="card shadow-sm">
                             <div className="card-body p-4">
+
                                 <h2 className="mb-4">
                                     Add Employee
                                 </h2>
@@ -210,6 +217,8 @@ function AddEmployee() {
                                 )}
 
                                 <form onSubmit={handleSubmit}>
+
+                                    {/* Text fields */}
                                     {[
                                         ["first_name", "First Name"],
                                         ["last_name", "Last Name"],
@@ -377,6 +386,7 @@ function AddEmployee() {
                                             Cancel
                                         </Link>
                                     </div>
+
                                 </form>
                             </div>
                         </div>
