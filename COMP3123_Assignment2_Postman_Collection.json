@@ -1,0 +1,754 @@
+{
+  "auth": {
+    "bearer": [
+      {
+        "key": "token",
+        "type": "string",
+        "value": "{{json_web_token_0idt}}"
+      }
+    ],
+    "type": "bearer"
+  },
+  "info": {
+    "_collection_link": "https://go.postman.co/collection/58280212-cd75c7a9-42d6-4b36-a0eb-cbadfc437046?source=collection_link",
+    "_exporter_id": "58280212",
+    "_postman_id": "cd75c7a9-42d6-4b36-a0eb-cbadfc437046",
+    "name": "Assignment 2 - React",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "SignUp",
+      "request": {
+        "body": {
+          "mode": "raw",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          },
+          "raw": "\r\n{\r\n  \"username\": \"alexjohnson\",\r\n  \"email\": \"alex.johnson@example.com\",\r\n  \"password\": \"{{test_password}}\"\r\n}\r\n"
+        },
+        "header": [],
+        "method": "POST",
+        "url": {
+          "host": [
+            "localhost"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "user",
+            "signup"
+          ],
+          "port": "8081",
+          "protocol": "http",
+          "raw": "http://localhost:8081/api/v1/user/signup"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Login",
+      "request": {
+        "body": {
+          "mode": "raw",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          },
+          "raw": "\r\n{\r\n  \"email\": \"alex.johnson@example.com\",\r\n  \"password\": \"{{test_password}}\"\r\n}\r\n"
+        },
+        "header": [],
+        "method": "POST",
+        "url": {
+          "host": [
+            "localhost"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "user",
+            "login"
+          ],
+          "port": "8081",
+          "protocol": "http",
+          "raw": "http://localhost:8081/api/v1/user/login"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Employee",
+      "request": {
+        "body": {
+          "mode": "raw",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          },
+          "raw": "\r\n{\r\n  \"first_name\": \"Michael\",\r\n  \"last_name\": \"Brown\",\r\n  \"email\": \"michael.brown@example.com\",\r\n  \"position\": \"Software Developer\",\r\n  \"salary\": 75000,\r\n  \"date_of_joining\": \"2025-09-15\",\r\n  \"department\": \"Engineering\"\r\n}\r\n"
+        },
+        "header": [],
+        "method": "POST",
+        "url": {
+          "host": [
+            "localhost"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "emp",
+            "employees"
+          ],
+          "port": "8081",
+          "protocol": "http",
+          "raw": "http://localhost:8081/api/v1/emp/employees"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get All Employees",
+      "request": {
+        "header": [],
+        "method": "GET",
+        "url": {
+          "host": [
+            "localhost"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "emp",
+            "employees"
+          ],
+          "port": "8081",
+          "protocol": "http",
+          "raw": "http://localhost:8081/api/v1/emp/employees"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Reject Invalid JWT",
+      "request": {
+        "auth": {
+          "bearer": [
+            {
+              "key": "token",
+              "type": "string",
+              "value": "{{auth_secret_18f5}}"
+            }
+          ],
+          "type": "bearer"
+        },
+        "header": [],
+        "method": "GET",
+        "url": {
+          "host": [
+            "localhost"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "emp",
+            "employees"
+          ],
+          "port": "8081",
+          "protocol": "http",
+          "raw": "http://localhost:8081/api/v1/emp/employees"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Reject Missing JWT",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "header": [],
+        "method": "GET",
+        "url": {
+          "host": [
+            "localhost"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "emp",
+            "employees"
+          ],
+          "port": "8081",
+          "protocol": "http",
+          "raw": "http://localhost:8081/api/v1/emp/employees"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Employee by ID",
+      "request": {
+        "auth": {
+          "bearer": [
+            {
+              "key": "token",
+              "type": "string",
+              "value": "{{vault:thurs}}"
+            }
+          ],
+          "type": "bearer"
+        },
+        "header": [],
+        "method": "GET",
+        "url": {
+          "host": [
+            "localhost"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "emp",
+            "employees",
+            "6af6699e383e3f20efe7c466"
+          ],
+          "port": "8081",
+          "protocol": "http",
+          "raw": "http://localhost:8081/api/v1/emp/employees/6af6699e383e3f20efe7c466"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Unauthorized Employee Access",
+      "request": {
+        "auth": {
+          "bearer": [
+            {
+              "key": "token",
+              "type": "string",
+              "value": "{{json_web_token_0bys}}"
+            }
+          ],
+          "type": "bearer"
+        },
+        "header": [],
+        "method": "GET",
+        "url": {
+          "host": [
+            "localhost"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "emp",
+            "employees",
+            "6af6699e383e3f20efe7c466"
+          ],
+          "port": "8081",
+          "protocol": "http",
+          "raw": "http://localhost:8081/api/v1/emp/employees/6af6699e383e3f20efe7c466"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Search Employees By Department",
+      "request": {
+        "header": [],
+        "method": "GET",
+        "url": {
+          "host": [
+            "localhost"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "emp",
+            "employees",
+            "search"
+          ],
+          "port": "8081",
+          "protocol": "http",
+          "query": [
+            {
+              "key": "department",
+              "value": "Engineering"
+            }
+          ],
+          "raw": "http://localhost:8081/api/v1/emp/employees/search?department=Engineering"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Search Employees by Position",
+      "request": {
+        "header": [],
+        "method": "GET",
+        "url": {
+          "host": [
+            "localhost"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "emp",
+            "employees",
+            "search"
+          ],
+          "port": "8081",
+          "protocol": "http",
+          "query": [
+            {
+              "key": "position",
+              "value": "Developer"
+            }
+          ],
+          "raw": "http://localhost:8081/api/v1/emp/employees/search?position=Developer"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Search Employees by Department and Position",
+      "request": {
+        "header": [],
+        "method": "GET",
+        "url": {
+          "host": [
+            "localhost"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "emp",
+            "employees",
+            "search"
+          ],
+          "port": "8081",
+          "protocol": "http",
+          "query": [
+            {
+              "key": "department",
+              "value": "Engineering"
+            },
+            {
+              "key": "position",
+              "value": "Developer"
+            }
+          ],
+          "raw": "http://localhost:8081/api/v1/emp/employees/search?department=Engineering&position=Developer"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Search Employees - Missing Filters",
+      "request": {
+        "header": [],
+        "method": "GET",
+        "url": {
+          "host": [
+            "localhost"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "emp",
+            "employees",
+            "search"
+          ],
+          "port": "8081",
+          "protocol": "http",
+          "raw": "http://localhost:8081/api/v1/emp/employees/search"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Employee with Profile Picture",
+      "request": {
+        "body": {
+          "formdata": [
+            {
+              "key": "first_name",
+              "type": "text",
+              "value": "Emily"
+            },
+            {
+              "key": "last_name",
+              "type": "text",
+              "value": "Carter"
+            },
+            {
+              "key": "email",
+              "type": "text",
+              "value": "emily.carter@example.com"
+            },
+            {
+              "key": "position",
+              "type": "text",
+              "value": "Software Developer"
+            },
+            {
+              "key": "salary",
+              "type": "text",
+              "value": "68000"
+            },
+            {
+              "key": "date_of_joining",
+              "type": "text",
+              "value": "2025-10-15"
+            },
+            {
+              "key": "department",
+              "type": "text",
+              "value": "Engineering"
+            },
+            {
+              "key": "profile_picture",
+              "src": [
+                "postman-cloud:///1f1d9a7a-2c12-49d0-b109-eb3d8791f326"
+              ],
+              "type": "file"
+            }
+          ],
+          "mode": "formdata"
+        },
+        "header": [],
+        "method": "POST",
+        "url": {
+          "host": [
+            "localhost"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "emp",
+            "employees"
+          ],
+          "port": "8081",
+          "protocol": "http",
+          "raw": "http://localhost:8081/api/v1/emp/employees"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update Employee Profile Picture",
+      "request": {
+        "body": {
+          "formdata": [
+            {
+              "key": "profile_picture",
+              "src": [
+                "postman-cloud:///1f1d9a94-d0f3-4a20-a79f-4410627d8100"
+              ],
+              "type": "file"
+            }
+          ],
+          "mode": "formdata"
+        },
+        "header": [],
+        "method": "PUT",
+        "url": {
+          "host": [
+            "localhost"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "emp",
+            "employees",
+            "6aed6eaed70e200c9b6dae83"
+          ],
+          "port": "8081",
+          "protocol": "http",
+          "raw": "http://localhost:8081/api/v1/emp/employees/6aed6eaed70e200c9b6dae83"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete Employee",
+      "request": {
+        "header": [],
+        "method": "DELETE",
+        "url": {
+          "host": [
+            "localhost"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "emp",
+            "employees"
+          ],
+          "port": "8081",
+          "protocol": "http",
+          "query": [
+            {
+              "key": "eid",
+              "value": "6aed6eaed70e200c9b6dae83"
+            }
+          ],
+          "raw": "http://localhost:8081/api/v1/emp/employees?eid=6aed6eaed70e200c9b6dae83"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Reject Invalid Profile Picture",
+      "request": {
+        "body": {
+          "formdata": [
+            {
+              "key": "first_name",
+              "type": "text",
+              "value": "June"
+            },
+            {
+              "key": "last_name",
+              "type": "text",
+              "value": "Bird"
+            },
+            {
+              "key": "email",
+              "type": "text",
+              "value": "june.bird@example.com"
+            },
+            {
+              "key": "position",
+              "type": "text",
+              "value": "Full Stack Developer"
+            },
+            {
+              "key": "salary",
+              "type": "text",
+              "value": "70000"
+            },
+            {
+              "key": "date_of_joining",
+              "type": "text",
+              "value": "2025-10-15"
+            },
+            {
+              "key": "department",
+              "type": "text",
+              "value": "Engineering"
+            },
+            {
+              "key": "profile_picture",
+              "src": [
+                "postman-cloud:///1f1d9aa8-f7eb-46f0-8506-4b18e12902d5"
+              ],
+              "type": "file"
+            }
+          ],
+          "mode": "formdata"
+        },
+        "header": [],
+        "method": "POST",
+        "url": {
+          "host": [
+            "localhost"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "emp",
+            "employees"
+          ],
+          "port": "8081",
+          "protocol": "http",
+          "raw": "http://localhost:8081/api/v1/emp/employees"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Reject Large Profile Picture",
+      "request": {
+        "body": {
+          "formdata": [
+            {
+              "key": "profile_picture",
+              "src": [
+                "postman-cloud:///1f1d9aba-c096-4d50-b64d-82a981cfaeda"
+              ],
+              "type": "file"
+            }
+          ],
+          "mode": "formdata"
+        },
+        "header": [],
+        "method": "POST",
+        "url": {
+          "host": [
+            "localhost"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "emp",
+            "employees"
+          ],
+          "port": "8081",
+          "protocol": "http",
+          "raw": "http://localhost:8081/api/v1/emp/employees"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete for React Testing",
+      "request": {
+        "header": [],
+        "method": "DELETE",
+        "url": {
+          "host": [
+            "localhost"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "emp",
+            "employees"
+          ],
+          "port": "8081",
+          "protocol": "http",
+          "query": [
+            {
+              "key": "eid",
+              "value": "6aee6e63c886d3f62e7269ac"
+            }
+          ],
+          "raw": "http://localhost:8081/api/v1/emp/employees?eid=6aee6e63c886d3f62e7269ac"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update Employee Details",
+      "protocolProfileBehavior": {
+        "disableCookies": false,
+        "followRedirects": true,
+        "protocolVersion": "auto",
+        "strictSSL": false
+      },
+      "request": {
+        "auth": {
+          "bearer": [
+            {
+              "key": "token",
+              "type": "string",
+              "value": "{{vault:thurs}}"
+            }
+          ],
+          "type": "bearer"
+        },
+        "body": {
+          "formdata": [
+            {
+              "key": "first_name",
+              "type": "text",
+              "value": "John"
+            },
+            {
+              "key": "last_name",
+              "type": "text",
+              "value": "Martin"
+            },
+            {
+              "key": "email",
+              "type": "text",
+              "value": "john.martin@example.com"
+            },
+            {
+              "key": "position",
+              "type": "text",
+              "value": "Senior Sales Manager"
+            },
+            {
+              "key": "department",
+              "type": "text",
+              "value": "Sales"
+            },
+            {
+              "key": "salary",
+              "type": "text",
+              "value": "65000"
+            },
+            {
+              "key": "date_of_joining",
+              "type": "text",
+              "value": "2020-01-01"
+            },
+            {
+              "key": "profile_picture",
+              "src": [],
+              "type": "file"
+            }
+          ],
+          "mode": "formdata"
+        },
+        "header": [],
+        "method": "PUT",
+        "url": {
+          "host": [
+            "localhost"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "emp",
+            "employees",
+            "6af6699e383e3f20efe7c466"
+          ],
+          "port": "8081",
+          "protocol": "http",
+          "raw": "http://localhost:8081/api/v1/emp/employees/6af6699e383e3f20efe7c466"
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "json_web_token_1dpf",
+      "secret": true
+    },
+    {
+      "key": "json_web_token_06be",
+      "secret": true
+    },
+    {
+      "key": "json_web_token_0u01",
+      "secret": true
+    },
+    {
+      "key": "json_web_token_15z6",
+      "secret": true
+    },
+    {
+      "key": "token",
+      "secret": true
+    },
+    {
+      "key": "json_web_token_046g",
+      "secret": true
+    },
+    {
+      "key": "json_web_token_0idt",
+      "secret": true
+    },
+    {
+      "key": "json_web_token_0bys",
+      "secret": true
+    }
+  ]
+}
