@@ -3,6 +3,7 @@
 Purpose:
 Allow authenticated users to create employees
 with an optional profile picture.
+Validate picture type and size before uploading.
 */
 
 import { useState } from "react";
@@ -26,6 +27,7 @@ function AddEmployee() {
     const [picture, setPicture] = useState(null);
     const [preview, setPreview] = useState("");
     const [error, setError] = useState("");
+    const [pictureError, setPictureError] = useState("");
     const [loading, setLoading] = useState(false);
 
     // Update controlled inputs
@@ -38,11 +40,12 @@ function AddEmployee() {
         }));
     };
 
-    // Select and validate picture
+    // Select and validate profile picture
     const handlePictureChange = (event) => {
-        const file = event.target.files[0];
+        const file = event.target.files?.[0];
 
         setError("");
+        setPictureError("");
         setPicture(null);
         setPreview("");
 
@@ -56,21 +59,38 @@ function AddEmployee() {
             "image/webp"
         ];
 
+        // Validate file type
         if (!allowedTypes.includes(file.type)) {
-            setError("Only JPEG, PNG and WebP images are allowed.");
+            setPictureError(
+                "Invalid file type. Please select a JPEG, PNG or WebP image."
+            );
+
             event.target.value = "";
             return;
         }
 
-        if (file.size > 2 * 1024 * 1024) {
-            setError("Profile picture must not exceed 2 MB.");
+        // Validate maximum file size (2 MB)
+        const maxFileSize = 2 * 1024 * 1024;
+
+        if (file.size > maxFileSize) {
+            const fileSizeMB = (
+                file.size / (1024 * 1024)
+            ).toFixed(2);
+
+            setPictureError(
+                `This image is ${fileSizeMB} MB. ` +
+                "Profile pictures must be 2 MB or smaller. " +
+                "Please select a smaller image."
+            );
+
             event.target.value = "";
             return;
         }
 
+        // Store the valid file
         setPicture(file);
 
-        // Show image preview
+        // Display image preview
         const reader = new FileReader();
 
         reader.onload = () => {
@@ -84,6 +104,11 @@ function AddEmployee() {
     const handleSubmit = async (event) => {
         event.preventDefault();
         setError("");
+
+        // Prevent submission with an invalid picture
+        if (pictureError) {
+            return;
+        }
 
         // Validate required fields
         if (
@@ -122,14 +147,11 @@ function AddEmployee() {
                 data.append("profile_picture", picture);
             }
 
-            // Check salary before submitting
-            console.log(
-                "Salary being submitted:",
-                data.get("salary")
-            );
-
             // Send employee data to backend
-            await api.post("/api/v1/emp/employees", data);
+            await api.post(
+                "/api/v1/emp/employees",
+                data
+            );
 
             // Return to Employee List
             navigate("/employees", { replace: true });
@@ -137,13 +159,19 @@ function AddEmployee() {
         } catch (error) {
             const status = error.response?.status;
 
-            if (status === 400 || status === 413) {
+            if (status === 413) {
+                setPictureError(
+                    "Profile picture is too large. Maximum size is 2 MB."
+                );
+            } else if (status === 400) {
                 setError(
                     error.response?.data?.message ||
                     "Please check the employee information."
                 );
             } else if (status === 429) {
-                setError("Too many requests. Please try again later.");
+                setError(
+                    "Too many requests. Please try again later."
+                );
             } else if (status === 403 || status === 404) {
                 setError(
                     "You do not have permission to perform this action."
@@ -171,6 +199,7 @@ function AddEmployee() {
                                     Add Employee
                                 </h2>
 
+                                {/* General error message */}
                                 {error && (
                                     <div
                                         className="alert alert-danger"
@@ -274,14 +303,38 @@ function AddEmployee() {
                                         <input
                                             type="file"
                                             id="profile_picture"
-                                            className="form-control"
+                                            className={
+                                                pictureError
+                                                    ? "form-control is-invalid"
+                                                    : "form-control"
+                                            }
                                             accept="image/jpeg,image/png,image/webp"
                                             onChange={handlePictureChange}
+                                            aria-invalid={Boolean(pictureError)}
+                                            aria-describedby={
+                                                pictureError
+                                                    ? "picture-error"
+                                                    : "picture-help"
+                                            }
                                         />
 
-                                        <small className="text-muted">
+                                        <small
+                                            id="picture-help"
+                                            className="text-muted d-block mt-1"
+                                        >
                                             JPEG, PNG or WebP. Maximum 2 MB.
                                         </small>
+
+                                        {/* Picture validation message */}
+                                        {pictureError && (
+                                            <div
+                                                id="picture-error"
+                                                className="alert alert-danger mt-2 mb-0"
+                                                role="alert"
+                                            >
+                                                {pictureError}
+                                            </div>
+                                        )}
                                     </div>
 
                                     {/* Picture Preview */}
@@ -303,11 +356,14 @@ function AddEmployee() {
                                     )}
 
                                     {/* Buttons */}
-                                    <div className="d-flex gap-2">
+                                    <div className="d-flex flex-wrap gap-2">
                                         <button
                                             type="submit"
                                             className="btn btn-primary"
-                                            disabled={loading}
+                                            disabled={
+                                                loading ||
+                                                Boolean(pictureError)
+                                            }
                                         >
                                             {loading
                                                 ? "Saving..."
