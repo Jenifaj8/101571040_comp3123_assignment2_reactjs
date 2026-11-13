@@ -1,16 +1,116 @@
-# React + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+# Employee Management System - React Frontend
 
-Currently, two official plugins are available:
+**Course:** COMP3123 - Full Stack Development  
+**Assignment:** Assignment 2  
+**Student ID:** 101571040
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Overview
 
-## React Compiler
+This folder contains the React frontend for the Employee Management System.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+The application uses React, Vite, React Router, Axios, and Bootstrap to provide a responsive interface for employee management.
 
-## Expanding the ESLint configuration
+The frontend communicates with a secured Node.js and Express backend connected to MongoDB Atlas.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Technologies
+
+- ReactJS
+- Vite
+- React Router
+- Axios
+- Bootstrap 5
+- JavaScript
+
+## Frontend Structure
+
+```text
+frontend/
+├── public/
+├── src/
+│   ├── api/
+│   │   └── axios.js
+│   ├── components/
+│   │   └── Navbar.jsx
+│   ├── pages/
+│   │   ├── Login.jsx
+│   │   ├── Signup.jsx
+│   │   ├── Employees.jsx
+│   │   ├── AddEmployee.jsx
+│   │   ├── ViewEmployee.jsx
+│   │   └── EditEmployee.jsx
+│   ├── routes/
+│   │   └── ProtectedRoute.jsx
+│   ├── App.jsx
+│   ├── index.css
+│   └── main.jsx
+├── .env.example
+├── Dockerfile
+├── nginx.conf
+├── package.json
+└── README.md
+```
+
+## Local Setup
+
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. Create a `.env` file inside `frontend/`:
+
+```env
+VITE_API_URL=http://localhost:8081
+```
+
+3. Ensure the backend is running.
+
+4. Start React:
+
+```bash
+npm run dev
+```
+
+Open the URL displayed by Vite.
+
+The backend CORS configuration must allow the frontend's origin.
+
+## Production Build
+
+```bash
+npm run build
+```
+
+The production files are generated inside `dist/`.
+
+## Docker
+
+The frontend uses a multi-stage Dockerfile with Node.js for building React and Nginx for serving the production files.
+
+Run Docker Compose from the **main project directory**:
+
+```bash
+docker compose up -d --build
+```
+
+Open:
+
+http://localhost:8080
+
+To stop the containers:
+
+```bash
+docker compose stop
+```
+
+## Main Project Documentation
+
+For the complete application features, backend setup, API endpoints, authentication, MongoDB Atlas configuration, Postman collection, security testing, and deployment instructions, refer to:
+
+**[Main Project README](../README.md)**
+
+## GitHub Repository
+
+https://github.com/Jenifaj8/101571040_comp3123_assignment2_reactjs
