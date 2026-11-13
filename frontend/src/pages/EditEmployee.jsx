@@ -4,6 +4,7 @@ Purpose:
 Allow authenticated users to update their
 employees and replace profile pictures.
 Validate picture type and size before uploading.
+Show a success message after updating.
 */
 
 import { useEffect, useState } from "react";
@@ -153,7 +154,7 @@ function EditEmployee() {
             return;
         }
 
-        // Store the valid replacement picture
+        // Store valid replacement picture
         setPicture(file);
 
         // Display new picture preview
@@ -214,7 +215,7 @@ function EditEmployee() {
                 }
             );
 
-            // Add replacement picture if selected
+            // Include replacement picture if selected
             if (picture) {
                 data.append(
                     "profile_picture",
@@ -222,16 +223,22 @@ function EditEmployee() {
                 );
             }
 
-            // Send updated employee information
+            // Save changes to backend
             await api.put(
                 `/api/v1/emp/employees/${id}`,
                 data
             );
 
-            // Return to employee details
+            // Redirect with success confirmation
             navigate(
                 `/employees/${id}`,
-                { replace: true }
+                {
+                    replace: true,
+                    state: {
+                        successMessage:
+                            "Employee updated successfully!"
+                    }
+                }
             );
 
         } catch (error) {

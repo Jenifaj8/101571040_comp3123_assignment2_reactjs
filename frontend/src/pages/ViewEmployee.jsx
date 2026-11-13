@@ -3,31 +3,51 @@
 Purpose:
 Display the details of an employee
 belonging to the logged-in user.
+Show a visible confirmation after a successful update.
 */
 
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import {
+    Link,
+    useLocation,
+    useNavigate,
+    useParams
+} from "react-router-dom";
 import api from "../api/axios";
 import Navbar from "../components/Navbar";
 
 function ViewEmployee() {
     const { id } = useParams();
+    const location = useLocation();
+    const navigate = useNavigate();
 
     const [employee, setEmployee] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
+    // Keep the message visible after navigation state is cleared
+    const [successMessage, setSuccessMessage] = useState(
+        () => location.state?.successMessage || ""
+    );
+
     // Retrieve employee details
     useEffect(() => {
+        let active = true;
+
         const fetchEmployee = async () => {
             try {
                 const response = await api.get(
                     `/api/v1/emp/employees/${id}`
                 );
 
-                setEmployee(response.data.employee);
+                if (active) {
+                    setEmployee(response.data.employee);
+                    setError("");
+                }
 
             } catch (error) {
+                if (!active) return;
+
                 const status = error.response?.status;
 
                 if (status === 403 || status === 404) {
@@ -46,12 +66,37 @@ function ViewEmployee() {
                     );
                 }
             } finally {
-                setLoading(false);
+                if (active) {
+                    setLoading(false);
+                }
             }
         };
 
         fetchEmployee();
+
+        return () => {
+            active = false;
+        };
     }, [id]);
+
+    // Clear navigation state without clearing the visible message
+    useEffect(() => {
+        if (location.state?.successMessage) {
+            setSuccessMessage(location.state.successMessage);
+
+            navigate(
+                location.pathname,
+                {
+                    replace: true,
+                    state: null
+                }
+            );
+        }
+    }, [
+        location.pathname,
+        location.state,
+        navigate
+    ]);
 
     return (
         <>
@@ -61,10 +106,12 @@ function ViewEmployee() {
                 <div className="row justify-content-center">
                     <div className="col-md-8 col-lg-7">
 
+                        {/* Loading message */}
                         {loading && (
                             <p>Loading employee details...</p>
                         )}
 
+                        {/* Error message */}
                         {error && (
                             <div
                                 className="alert alert-danger"
@@ -74,13 +121,43 @@ function ViewEmployee() {
                             </div>
                         )}
 
+                        {/* Employee details */}
                         {!loading && employee && (
-                            <div className="card shadow-sm">
+                            <div
+                                className={
+                                    successMessage
+                                        ? "card shadow-sm border-success"
+                                        : "card shadow-sm"
+                                }
+                            >
                                 <div className="card-body p-4">
 
                                     <h2 className="mb-4">
                                         Employee Details
                                     </h2>
+
+                                    {/* Successful update confirmation */}
+                                    {successMessage && (
+                                        <div
+                                            className="alert alert-success d-flex align-items-center justify-content-between gap-2"
+                                            role="status"
+                                        >
+                                            <span>
+                                                <strong>
+                                                    {successMessage}
+                                                </strong>
+                                            </span>
+
+                                            <button
+                                                type="button"
+                                                className="btn-close"
+                                                aria-label="Dismiss success message"
+                                                onClick={() =>
+                                                    setSuccessMessage("")
+                                                }
+                                            />
+                                        </div>
+                                    )}
 
                                     {/* Profile Picture */}
                                     <div className="text-center mb-4">
@@ -108,27 +185,37 @@ function ViewEmployee() {
                                             <tbody>
                                                 <tr>
                                                     <th>First Name</th>
-                                                    <td>{employee.first_name}</td>
+                                                    <td>
+                                                        {employee.first_name}
+                                                    </td>
                                                 </tr>
 
                                                 <tr>
                                                     <th>Last Name</th>
-                                                    <td>{employee.last_name}</td>
+                                                    <td>
+                                                        {employee.last_name}
+                                                    </td>
                                                 </tr>
 
                                                 <tr>
                                                     <th>Email</th>
-                                                    <td>{employee.email}</td>
+                                                    <td>
+                                                        {employee.email}
+                                                    </td>
                                                 </tr>
 
                                                 <tr>
                                                     <th>Position</th>
-                                                    <td>{employee.position}</td>
+                                                    <td>
+                                                        {employee.position}
+                                                    </td>
                                                 </tr>
 
                                                 <tr>
                                                     <th>Department</th>
-                                                    <td>{employee.department}</td>
+                                                    <td>
+                                                        {employee.department}
+                                                    </td>
                                                 </tr>
 
                                                 <tr>
@@ -152,7 +239,7 @@ function ViewEmployee() {
                                     </div>
 
                                     {/* Action Buttons */}
-                                    <div className="d-flex gap-2">
+                                    <div className="d-flex flex-wrap gap-2">
                                         <Link
                                             to={`/employees/${employee._id}/edit`}
                                             className="btn btn-warning"

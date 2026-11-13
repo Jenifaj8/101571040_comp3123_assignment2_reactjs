@@ -2,6 +2,7 @@
 /*
 Purpose:
 Allow users to log in to the Employee Management System.
+Store the JWT and authenticated user email.
 */
 
 import { useState } from "react";
@@ -30,16 +31,33 @@ function Login() {
         setLoading(true);
 
         try {
-            const response = await api.post("/api/v1/user/login", {
-                email: email.trim(),
-                password: password
-            });
+            const cleanEmail = email.trim().toLowerCase();
+
+            // Authenticate with backend
+            const response = await api.post(
+                "/api/v1/user/login",
+                {
+                    email: cleanEmail,
+                    password: password
+                }
+            );
 
             // Store JWT token
-            localStorage.setItem("token", response.data.token);
+            localStorage.setItem(
+                "token",
+                response.data.token
+            );
+
+            // Store email for navbar display
+            localStorage.setItem(
+                "userEmail",
+                cleanEmail
+            );
 
             // Redirect to employee list
-            navigate("/employees", { replace: true });
+            navigate("/employees", {
+                replace: true
+            });
 
         } catch (error) {
             const status = error.response?.status;
@@ -47,14 +65,18 @@ function Login() {
             if (status === 401) {
                 setError("Invalid email or password.");
             } else if (status === 429) {
-                setError("Too many login attempts. Please try again later.");
+                setError(
+                    "Too many login attempts. Please try again later."
+                );
             } else if (status === 400) {
                 setError(
                     error.response?.data?.message ||
                     "Please check your information."
                 );
             } else {
-                setError("Unable to log in. Please try again later.");
+                setError(
+                    "Unable to log in. Please try again later."
+                );
             }
         } finally {
             setLoading(false);
@@ -62,24 +84,34 @@ function Login() {
     };
 
     return (
-        <div className="container mt-5">
+        <div className="container mt-5 mb-5">
             <div className="row justify-content-center">
                 <div className="col-md-6 col-lg-5">
                     <div className="card shadow-sm">
                         <div className="card-body p-4">
+
                             <h2 className="text-center mb-4">
                                 Employee Management Login
                             </h2>
 
+                            {/* Login error */}
                             {error && (
-                                <div className="alert alert-danger" role="alert">
+                                <div
+                                    className="alert alert-danger"
+                                    role="alert"
+                                >
                                     {error}
                                 </div>
                             )}
 
                             <form onSubmit={handleSubmit}>
+
+                                {/* Email */}
                                 <div className="mb-3">
-                                    <label htmlFor="email" className="form-label">
+                                    <label
+                                        htmlFor="email"
+                                        className="form-label"
+                                    >
                                         Email Address
                                     </label>
 
@@ -96,6 +128,7 @@ function Login() {
                                     />
                                 </div>
 
+                                {/* Password */}
                                 <div className="mb-3">
                                     <label
                                         htmlFor="password"
@@ -117,19 +150,25 @@ function Login() {
                                     />
                                 </div>
 
+                                {/* Login button */}
                                 <button
                                     type="submit"
                                     className="btn btn-primary w-100"
                                     disabled={loading}
                                 >
-                                    {loading ? "Logging in..." : "Login"}
+                                    {loading
+                                        ? "Logging in..."
+                                        : "Login"}
                                 </button>
                             </form>
 
-                            <p className="text-center mt-3">
+                            <p className="text-center mt-3 mb-0">
                                 Don't have an account?{" "}
-                                <Link to="/signup">Sign Up</Link>
+                                <Link to="/signup">
+                                    Sign Up
+                                </Link>
                             </p>
+
                         </div>
                     </div>
                 </div>

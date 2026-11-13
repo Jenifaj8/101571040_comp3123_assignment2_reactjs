@@ -20,7 +20,8 @@ api.interceptors.request.use(
         const token = localStorage.getItem("token");
 
         if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
+            config.headers.Authorization =
+                `Bearer ${token}`;
         }
 
         return config;
@@ -35,14 +36,16 @@ api.interceptors.response.use(
         const status = error.response?.status;
         const requestUrl = error.config?.url || "";
 
-        // Do not redirect on invalid login credentials
+        // Do not redirect for invalid login or signup
         const isAuthRequest =
             requestUrl.includes("/api/v1/user/login") ||
             requestUrl.includes("/api/v1/user/signup");
 
         if (status === 401 && !isAuthRequest) {
-            // Remove expired or invalid token
+
+            // Remove invalid or expired session
             localStorage.removeItem("token");
+            localStorage.removeItem("userEmail");
 
             // Redirect user to Login
             window.location.replace("/login");
